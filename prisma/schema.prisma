@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int           @id @default(autoincrement())
+  firstName   String
+  lastName    String
+  email       String        @unique
+  phoneNumber String        @unique
+  password    String
+  role        String
+  token       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  isActive    Boolean       @default(true)
+  projects    Project[]
+  userOnTeams UserOnTasks[]
+}
+
+model Project {
+  id               Int      @id @default(autoincrement())
+  title            String
+  description      String
+  projectCreatorId Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  isActive         Boolean  @default(true)
+
+  user        User          @relation(fields: [projectCreatorId], references: [id])
+  tasks       Task[]
+  userOnTeams UserOnTasks[]
+}
+
+model Task {
+  id            Int           @id @default(autoincrement())
+  title         String
+  description   String
+  projectId     Int
+  taskCreatorId Int
+  typeId        Int
+  statusId      Int
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  isActive      Boolean       @default(true)
+  project       Project       @relation(fields: [projectId], references: [id])
+  type          Type          @relation(fields: [typeId], references: [id])
+  status        Status        @relation(fields: [statusId], references: [id])
+  images        taskImages[]
+  userOnTeams   UserOnTasks[]
+}
+
+model Type {
+  id   Int    @id @default(autoincrement())
+  type String
+
+  tasks Task[]
+}
+
+model Status {
+  id   Int    @id @default(autoincrement())
+  type String
+
+  tasks Task[]
+}
+
+model taskImages {
+  id        Int      @id @default(autoincrement())
+  file      String
+  taskId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
+  tasks     Task     @relation(fields: [taskId], references: [id])
+}
+
+model UserOnTasks {
+  id             Int      @id @default(autoincrement())
+  projectId      Int
+  taskId         Int
+  taskAssigneeId Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  isActive       Boolean  @default(true)
+  project        Project  @relation(fields: [projectId], references: [id])
+  task           Task     @relation(fields: [taskId], references: [id])
+  assignees      User     @relation(fields: [taskAssigneeId], references: [id])
+}
